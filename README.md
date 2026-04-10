@@ -1,6 +1,4 @@
 # Welcome to your Lovable project
-
-TODO: Document your project here
 🌉 ConceptBridge
 Bridging the gap between STEM theory and real-world application.
 
