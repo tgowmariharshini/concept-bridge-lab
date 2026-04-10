@@ -1,11 +1,18 @@
 import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/Header";
 import { HeroSearch } from "@/components/HeroSearch";
+import { ConceptImage } from "@/components/ConceptImage";
 import { ResultCards } from "@/components/ResultCards";
+import { RelatedConcepts } from "@/components/RelatedConcepts";
+import { CareerSpotlight } from "@/components/CareerSpotlight";
+import { QuizSection } from "@/components/QuizSection";
 import { HistoryDrawer } from "@/components/HistoryDrawer";
 import { FooterConcept } from "@/components/FooterConcept";
+import { SkeletonLoader } from "@/components/SkeletonLoader";
+import { StreakCelebration } from "@/components/StreakCelebration";
 import { fetchConcept, getRandomConcept, type ConceptResult } from "@/lib/mockApi";
 import { getHistory, addToHistory, clearHistory, type HistoryItem } from "@/lib/history";
+import { getGamification, type GamificationState } from "@/lib/gamification";
 import { AnimatePresence, motion } from "framer-motion";
 
 const Index = () => {
@@ -19,6 +26,8 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [gamification, setGamification] = useState<GamificationState>(getGamification);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   useEffect(() => {
     setHistory(getHistory());
@@ -48,12 +57,20 @@ const Index = () => {
     setHistory(clearHistory());
   }, []);
 
+  const handleQuizComplete = useCallback((streakMilestone: boolean) => {
+    setGamification(getGamification());
+    if (streakMilestone) {
+      setShowCelebration(true);
+    }
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header
         darkMode={darkMode}
         onToggleDark={() => setDarkMode((d) => !d)}
         onOpenHistory={() => setHistoryOpen(true)}
+        gamification={gamification}
       />
 
       <main className="flex-1">
@@ -63,15 +80,7 @@ const Index = () => {
           isLoading={isLoading}
         />
 
-        {isLoading && (
-          <div className="flex justify-center py-12">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-              className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent"
-            />
-          </div>
-        )}
+        {isLoading && <SkeletonLoader />}
 
         <AnimatePresence mode="wait">
           {result && !isLoading && (
@@ -82,7 +91,15 @@ const Index = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
+              <ConceptImage
+                imageUrl={result.imageUrl}
+                attribution={result.imageAttribution}
+                concept={result.concept}
+              />
               <ResultCards result={result} />
+              <CareerSpotlight careers={result.careers} />
+              <QuizSection questions={result.quiz} onQuizComplete={handleQuizComplete} />
+              <RelatedConcepts concepts={result.relatedConcepts} onSelect={handleSearch} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -96,6 +113,11 @@ const Index = () => {
         history={history}
         onSelect={handleSearch}
         onClear={handleClearHistory}
+      />
+
+      <StreakCelebration
+        show={showCelebration}
+        onDone={() => setShowCelebration(false)}
       />
     </div>
   );
