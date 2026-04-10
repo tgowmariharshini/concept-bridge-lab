@@ -9,7 +9,7 @@ interface HeaderProps {
   gamification: GamificationState;
 }
 
-export function Header({ darkMode, onToggleDark, onOpenHistory, gamification }: HeaderProps) {
+export function Header({ darkMode, onToggleDark, onOpenHistory, gamification = { knowledgePoints: 0, currentStreak: 0, lastQuizDate: null, quizzesCompleted: 0 } }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-lg">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
